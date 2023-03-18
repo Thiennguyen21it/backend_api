@@ -2,36 +2,50 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import LoginSerializer, SignUpSerializer
+from .serializers import LoginSerializer, SignUpSerializer, PostPhotoSerializer, PostVideoSerializer, CommentSerializer, UserSerializer
+from .models import User, PostPhoto, PostVideo, Comment
 
 
-class SignUpAPIView(APIView):
+# class SignUpAPIView(APIView):
+#     permission_classes = (permissions.AllowAny,)
+
+#     def post(self, request):
+#         serializer = SignUpSerializer(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.save()
+#             refresh = RefreshToken.for_user(user)
+#             return Response({
+#                 'refresh': str(refresh),
+#                 'access': str(refresh.access_token),
+#             })
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SignUpAPIView(generics.ListCreateAPIView):
+    serializer_class = UserSerializer
     permission_classes = (permissions.AllowAny,)
+    queryset = User.objects.all()
 
-    def post(self, request):
-        serializer = SignUpSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LoginAPIView(generics.ListCreateAPIView):
+    serializer_class = LoginSerializer
+    permission_classes = (permissions.AllowAny,)
+    queryset = User.objects.all()
+
+# class LoginAPIView(APIView):
+#     permission_classes = (permissions.AllowAny,)
     
-class LoginAPIView(APIView):
-    permission_classes = (permissions.AllowAny,)
+#     def post(self, request):
+#         serializer = LoginSerializer(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.validated_data
+#             refresh = RefreshToken.for_user(user)
+#             return Response({
+#                 'refresh': str(refresh),
+#                 'access': str(refresh.access_token),
+#             })
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LogoutAPIView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -46,7 +60,41 @@ class LogoutAPIView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+class ImageAPIView(generics.ListCreateAPIView):
+    serializer_class = PostPhotoSerializer
+    permission_classes = (permissions.IsAuthenticated,)
 
+    def get_queryset(self):
+        return self.request.user.postphoto_set.all()
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class PostVideoAPIView(generics.ListCreateAPIView):
+    serializer_class = PostVideoSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_queryset(self):
+        return self.request.user.postvideo_set.all()
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class CommentAPIView(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_queryset(self):
+        return self.request.user.comment_set.all()
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 
 

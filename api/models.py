@@ -36,6 +36,7 @@ class User(AbstractBaseUser):
     postal_code = models.CharField(max_length=10, default='00000')
     occupation = models.CharField(max_length=100, default='Occupation')
     experience = models.CharField(max_length=100, default='Experience')
+    
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -59,7 +60,32 @@ class User(AbstractBaseUser):
     def name(self):
         return self.full_name
 
+class PostPhoto(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='images/', null=True, blank=True)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f'{self.user.username} - {self.created_at}'
+    
+class PostVideo(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    video = models.FileField(upload_to='videos/', null=True, blank=True)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.created_at}'
+    
+class Comment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(PostPhoto, on_delete=models.CASCADE)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.created_at}'
 
 # from django.db import models
 # Create your models here.
